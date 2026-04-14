@@ -24,13 +24,16 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serve frontend statically
-app.use(express.static(path.join(__dirname, '../frontend')));
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+app.use(express.static(path.join(__dirname, '../frondend'))); 
 
 // API Routes
 app.use('/auth', require('./routes/auth'));
+
+
 app.use('/predict', require('./routes/predict'));
-app.use('/admin', require('./routes/admin'));
 
 // Health check
 app.get('/api/health', (req, res) => {
