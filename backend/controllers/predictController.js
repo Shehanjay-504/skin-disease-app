@@ -1,10 +1,8 @@
 const db = require('../config/db');
 const axios = require('axios');
 
-/**
- * 1. REAL ML SERVER CALL (Flask server ekata katha karana hati)
- * Oyaage Member 3 Flask server eka run karanawa nam meka pavichchi karanna.
- */
+
+ 
 const getRealPrediction = async (imagePath) => {
     try {
         const response = await axios.post('http://localhost:5000/predict', {
@@ -13,13 +11,12 @@ const getRealPrediction = async (imagePath) => {
         return response.data; // Result: { disease, confidence }
     } catch (error) {
         console.error("ML Server Error:", error);
-        throw error; // Meka error ekak unoth catch block ekata yanawa
+        throw error; 
     }
 };
 
-/**
- * 2. MOCK DATA (Server eka nathuwa test karanna)
- */
+
+ 
 const MOCK_DISEASES = [
     { disease: 'Eczema', confidence: 0.91 },
     { disease: 'Psoriasis', confidence: 0.85 },
@@ -44,14 +41,11 @@ const predict = async (req, res) => {
     }
 
     const imagePath = req.file.path;
-    const userId = req.user ? req.user.id : 1; // User auth nathnam default 1 gannawa
+    const userId = req.user ? req.user.id : 1; 
 
     try {
-        /**
-         * CHANGE HERE: 
-         * Real ML server ekata katha karanna oni nam 'getRealPrediction(imagePath)' danna.
-         * Danata test karanna 'getMockPrediction()' pavichchi karamu.
-         */
+        
+         
         const { disease, confidence } = await getMockPrediction();
 
         // Save prediction to database
@@ -60,7 +54,7 @@ const predict = async (req, res) => {
         db.query(sql, [userId, imagePath, disease, confidence], (err, result) => {
             if (err) {
                 console.error('Database INSERT error:', err);
-                // DB error unath user-ta result eka pennamu
+                
             }
 
             res.json({
