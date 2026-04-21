@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 
 // API Routes
 app.use('/auth', require('./routes/auth'));
-app.use('/predict', require('./routes/predict'));
+//app.use('/predict', require('./routes/predict'));
 app.use('/admin', require('./routes/admin'));
 
 // Health check
