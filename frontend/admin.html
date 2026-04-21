@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkinDx — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0a0d12; --bg2:#111620; --surface:#141922; --surface2:#1e2636;
+      --border:#252f42; --accent:#00d4aa; --accent2:#00a882;
+      --accent-glow:rgba(0,212,170,0.15); --text:#e8edf5; --text2:#8a96b0;
+      --text3:#5a6478; --danger:#ff4757; --warning:#ffa502; --success:#2ed573;
+      --font-display:'Syne',sans-serif; --font-body:'DM Sans',sans-serif;
+      --radius:12px; --radius-lg:20px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      color:var(--text);
+      font-family:var(--font-body);
+      min-height:100vh;
+      padding-top:64px;
+      position: relative;
+      background-image: url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(10, 13, 18, 0.72) 0%,
+        rgba(10, 13, 18, 0.85) 60%,
+        rgba(10, 13, 18, 1) 100%
+      );
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .page-container { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:3rem 2rem; }
+    .page-header { margin-bottom:2.5rem; }
+    .page-header h2 { font-family:var(--font-display); font-size:2rem; font-weight:800; margin-bottom:0.4rem; }
+    .page-header p { color:var(--text2); }
+    .admin-badge { display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0.75rem; background:rgba(255,165,2,0.1); border:1px solid rgba(255,165,2,0.3); border-radius:100px; font-size:0.75rem; color:var(--warning); font-weight:600; margin-bottom:1rem; }
+
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1.25rem; margin-bottom:2.5rem; }
+    .stat-card {
+      background: rgba(20, 25, 34, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:1.5rem; position:relative; overflow:hidden; transition:border-color 0.2s;
+    }
+    .stat-card:hover { border-color:var(--accent); }
+    .stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+    .stat-card.green::before { background:var(--accent); }
+    .stat-card.orange::before { background:var(--warning); }
+    .stat-card.red::before { background:var(--danger); }
+    .stat-card.blue::before { background:#4ecdc4; }
+    .stat-num { font-family:var(--font-display); font-size:2.2rem; font-weight:800; color:var(--text); }
+    .stat-label { font-size:0.82rem; color:var(--text2); margin-top:0.25rem; }
+    .stat-icon { font-size:1.5rem; margin-bottom:0.5rem; }
+
+    .admin-tabs { display:flex; gap:0.5rem; margin-bottom:1.5rem; border-bottom:1px solid var(--border); }
+    .tab-btn { padding:0.6rem 1.25rem; background:none; border:none; border-bottom:2px solid transparent; color:var(--text2); font-family:var(--font-body); font-size:0.9rem; font-weight:500; cursor:pointer; margin-bottom:-1px; transition:all 0.2s; }
+    .tab-btn:hover { color:var(--text); }
+    .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+
+    .table-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; gap:1rem; flex-wrap:wrap; }
+    .table-search input { background:rgba(20,25,34,0.85); backdrop-filter:blur(8px); border:1px solid var(--border); border-radius:var(--radius); padding:0.5rem 1rem; color:var(--text); font-family:var(--font-body); font-size:0.88rem; outline:none; width:240px; }
+    .table-search input:focus { border-color:var(--accent); }
+    .table-search input::placeholder { color:var(--text3); }
+    .table-count { font-size:0.85rem; color:var(--text2); }
+
+    .table-wrap {
+      overflow-x:auto;
+      background: rgba(20, 25, 34, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+    }
+    .data-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+    .data-table th { text-align:left; padding:1rem 1.25rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.8px; color:var(--text3); border-bottom:1px solid var(--border); font-weight:600; white-space:nowrap; }
+    .data-table td { padding:1rem 1.25rem; border-bottom:1px solid rgba(37,47,66,0.5); color:var(--text2); vertical-align:middle; }
+    .data-table tr:last-child td { border-bottom:none; }
+    .data-table tr:hover td { background:rgba(30,38,54,0.5); }
+    .role-badge { display:inline-block; padding:0.2rem 0.6rem; border-radius:100px; font-size:0.75rem; font-weight:600; }
+    .role-user { background:rgba(0,212,170,0.1); color:var(--accent); border:1px solid rgba(0,212,170,0.2); }
+    .role-admin { background:rgba(255,165,2,0.1); color:var(--warning); border:1px solid rgba(255,165,2,0.2); }
+    .btn-danger { background:transparent; color:var(--danger); border:1px solid rgba(255,71,87,0.4); padding:0.3rem 0.75rem; font-size:0.78rem; border-radius:6px; cursor:pointer; transition:all 0.2s; font-family:var(--font-body); }
+    .btn-danger:hover { background:rgba(255,71,87,0.1); border-color:var(--danger); }
+    .confidence-cell { color:var(--accent); font-family:var(--font-display); font-weight:700; }
+    .loading { text-align:center; color:var(--text3); padding:3rem; }
+
+    .chart-section {
+      margin-top:2rem;
+      background: rgba(20, 25, 34, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      padding:1.75rem;
+    }
+    .chart-title { font-family:var(--font-display); font-size:1rem; font-weight:700; margin-bottom:1.25rem; }
+    .bar-chart { display:flex; flex-direction:column; gap:0.75rem; }
+    .bar-row { display:flex; align-items:center; gap:1rem; }
+    .bar-label { width:160px; font-size:0.82rem; color:var(--text2); text-align:right; flex-shrink:0; }
+    .bar-track { flex:1; height:10px; background:rgba(17,22,32,0.8); border-radius:100px; overflow:hidden; }
+    .bar-fill { height:100%; background:linear-gradient(90deg,var(--accent2),var(--accent)); border-radius:100px; transition:width 0.8s ease; }
+    .bar-count { width:30px; font-size:0.82rem; color:var(--text3); flex-shrink:0; }
+  </style>
+</head>
+<body>
+  <script src="js/navbar.js"></script>
+  <script>requireAdmin();</script>
+
+  <div class="page-container">
+    <div class="admin-badge">⚙ Admin Dashboard</div>
+    <div class="page-header">
+      <h2>System Overview</h2>
+      <p>Manage users, view predictions, and monitor system health</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card green"><div class="stat-icon">👤</div><div class="stat-num" id="statUsers">—</div><div class="stat-label">Total Users</div></div>
+      <div class="stat-card orange"><div class="stat-icon">🔬</div><div class="stat-num" id="statPredictions">—</div><div class="stat-label">Total Diagnoses</div></div>
+      <div class="stat-card blue"><div class="stat-icon">🛡</div><div class="stat-num" id="statAdmins">—</div><div class="stat-label">Admins</div></div>
+      <div class="stat-card red"><div class="stat-icon">📊</div><div class="stat-num" id="statTopDisease">—</div><div class="stat-label">Top Detected</div></div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="switchTab('users', this)">👤 Users</button>
+      <button class="tab-btn" onclick="switchTab('predictions', this)">🔬 Predictions</button>
+      <button class="tab-btn" onclick="switchTab('analytics', this)">📊 Analytics</button>
+    </div>
+
+    <div id="tabUsers" class="tab-content active">
+      <div class="table-header">
+        <div class="table-search"><input type="text" id="userSearch" placeholder="🔍 Search users..." oninput="filterUsers()" /></div>
+        <div class="table-count" id="userCount"></div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Action</th></tr></thead>
+          <tbody id="usersBody"><tr><td colspan="6" class="loading">Loading users...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tabPredictions" class="tab-content">
+      <div class="table-header">
+        <div class="table-search"><input type="text" id="predSearch" placeholder="🔍 Search predictions..." oninput="filterPredictions()" /></div>
+        <div class="table-count" id="predCount"></div>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>User</th><th>Disease Detected</th><th>Confidence</th><th>Date</th></tr></thead>
+          <tbody id="predictionsBody"><tr><td colspan="5" class="loading">Loading predictions...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tabAnalytics" class="tab-content">
+      <div class="chart-section">
+        <div class="chart-title">Disease Detection Frequency</div>
+        <div class="bar-chart" id="diseaseChart"><div class="loading">Loading analytics...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:3000';
+    let allUsers = [], allPredictions = [];
+
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API}/admin/stats`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('statUsers').textContent = data.stats.total_users;
+          document.getElementById('statPredictions').textContent = data.stats.total_predictions;
+          document.getElementById('statAdmins').textContent = data.stats.total_admins;
+          if (data.stats.disease_breakdown?.length > 0) {
+            document.getElementById('statTopDisease').textContent = data.stats.disease_breakdown[0].predicted_disease.split(' ')[0];
+            renderDiseaseChart(data.stats.disease_breakdown);
+          }
+        }
+      } catch {}
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API}/admin/users`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const data = await res.json();
+        if (!res.ok) return;
+        allUsers = data.users;
+        renderUsers(allUsers);
+      } catch { document.getElementById('usersBody').innerHTML = '<tr><td colspan="6" class="loading">Failed to load.</td></tr>'; }
+    }
+
+    function renderUsers(users) {
+      document.getElementById('userCount').textContent = `${users.length} users`;
+      document.getElementById('usersBody').innerHTML = users.map(u => `
+        <tr>
+          <td style="color:var(--text3)">#${u.id}</td>
+          <td style="color:var(--text);font-weight:500">${u.name}</td>
+          <td>${u.email}</td>
+          <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+          <td>${new Date(u.created_at).toLocaleDateString()}</td>
+          <td>${u.role !== 'admin' ? `<button class="btn-danger" onclick="deleteUser(${u.id}, '${u.name}')">Delete</button>` : '<span style="color:var(--text3)">—</span>'}</td>
+        </tr>`).join('') || '<tr><td colspan="6" class="loading">No users found.</td></tr>';
+    }
+
+    function filterUsers() {
+      const q = document.getElementById('userSearch').value.toLowerCase();
+      renderUsers(allUsers.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)));
+    }
+
+    async function loadPredictions() {
+      try {
+        const res = await fetch(`${API}/admin/predictions`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const data = await res.json();
+        if (!res.ok) return;
+        allPredictions = data.predictions;
+        renderPredictions(allPredictions);
+      } catch { document.getElementById('predictionsBody').innerHTML = '<tr><td colspan="5" class="loading">Failed to load.</td></tr>'; }
+    }
+
+    function renderPredictions(preds) {
+      document.getElementById('predCount').textContent = `${preds.length} predictions`;
+      document.getElementById('predictionsBody').innerHTML = preds.map(p => `
+        <tr>
+          <td style="color:var(--text3)">#${p.id}</td>
+          <td><span style="color:var(--text)">${p.user_name}</span><br/><small style="color:var(--text3)">${p.email}</small></td>
+          <td style="color:var(--text);font-weight:500">${p.predicted_disease}</td>
+          <td class="confidence-cell">${(p.confidence * 100).toFixed(1)}%</td>
+          <td>${new Date(p.created_at).toLocaleDateString()}</td>
+        </tr>`).join('') || '<tr><td colspan="5" class="loading">No predictions found.</td></tr>';
+    }
+
+    function filterPredictions() {
+      const q = document.getElementById('predSearch').value.toLowerCase();
+      renderPredictions(allPredictions.filter(p => p.predicted_disease.toLowerCase().includes(q) || p.user_name.toLowerCase().includes(q)));
+    }
+
+    function renderDiseaseChart(breakdown) {
+      const max = breakdown[0]?.count || 1;
+      document.getElementById('diseaseChart').innerHTML = breakdown.map(d => `
+        <div class="bar-row">
+          <div class="bar-label">${d.predicted_disease}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(d.count/max)*100}%"></div></div>
+          <div class="bar-count">${d.count}</div>
+        </div>`).join('');
+    }
+
+    async function deleteUser(id, name) {
+      if (!confirm(`Delete user "${name}" and all their data?`)) return;
+      try {
+        const res = await fetch(`${API}/admin/users/${id}`, { method:'DELETE', headers: { 'Authorization': `Bearer ${getToken()}` } });
+        if (res.ok) { loadUsers(); loadStats(); }
+      } catch {}
+    }
+
+    function switchTab(tab, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`tab${tab.charAt(0).toUpperCase()+tab.slice(1)}`).classList.add('active');
+      if (tab === 'predictions') loadPredictions();
+    }
+
+    loadStats();
+    loadUsers();
+  </script>
+</body>
+</html>
