@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { predict } = require('../controllers/predictController');
+const { predict, getHistory } = require('../controllers/predictController');
 
 // Multer storage config 
 const storage = multer.diskStorage({
@@ -17,6 +17,9 @@ const upload = multer({ storage });
 
 // POST /predict
 router.post('/', upload.single('image'), predict);
+
+// GET /predict/history
+router.get('/history', verifyToken, allowRoles('user', 'admin'), getHistory);
 
 module.exports = router;
 
