@@ -73,5 +73,23 @@ const predict = async (req, res) => {
     }
 };
 
-module.exports = { predict };
+// GET /predict/history — user's own history
+const getHistory = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT id, image_path, predicted_disease, confidence, created_at
+       FROM predictions
+       WHERE user_id = ?
+       ORDER BY created_at DESC`,
+      [req.user.id]
+    );
+    res.json({ history: rows });
+  } catch (err) {
+    console.error('History error:', err);
+    res.status(500).json({ error: 'Failed to fetch history.' });
+  }
+};
+
+
+module.exports = { predict, getHistory };
 
