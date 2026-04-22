@@ -3,6 +3,8 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { predict, getHistory } = require('../controllers/predictController');
+const verifyToken = require('../middleware/verifyToken');
+const allowRoles = require('../middleware/allowRoles');
 
 // Multer storage config 
 const storage = multer.diskStorage({
