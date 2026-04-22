@@ -1,8 +1,6 @@
 // ============================================
 // navbar.js — Shared Navigation Component
-// Member 1 is responsible for this file
-// Include in every HTML page: <script src="navbar.js"></script>
-// ============================================
+
 
 function renderNavbar() {
   const user = JSON.parse(localStorage.getItem('skindx_user') || 'null');
