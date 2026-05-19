@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // POST /predict
-router.post('/', upload.single('image'), predict);
+router.post('/', verifyToken, upload.single('image'), predict);
 
 // GET /predict/history
 router.get('/history', verifyToken, allowRoles('user', 'admin'), getHistory);

@@ -2,7 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const chatRouter = require('./routes/chat');
 require('dotenv').config();
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +18,7 @@ if (!fs.existsSync('uploads')) {
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -28,10 +30,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // API Routes
-app.use('/auth', require('./routes/auth'));
-app.use('/predict', require('./routes/predict'));
-app.use('/admin', require('./routes/admin'));
-
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/predict', require('./routes/predict'));
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/chat', chatRouter);
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Skin Disease API is running.' });

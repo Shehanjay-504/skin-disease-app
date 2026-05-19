@@ -32,39 +32,33 @@ const getMockPrediction = async () => {
     return MOCK_DISEASES[Math.floor(Math.random() * MOCK_DISEASES.length)];
 };
 
-// ==========================================
 // MAIN CONTROLLER FUNCTION
-// ==========================================
+
 const predict = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No image uploaded.' });
     }
 
     const imagePath = req.file.path;
-    const userId = req.user ? req.user.id : 1; 
+    const userId = req.user.id; // User ID from verified token 
 
     try {
-        
-         
+        // Get mock prediction 
         const { disease, confidence } = await getMockPrediction();
 
         // Save prediction to database
         const sql = 'INSERT INTO predictions (user_id, image_path, predicted_disease, confidence) VALUES (?, ?, ?, ?)';
-        
-        db.query(sql, [userId, imagePath, disease, confidence], (err, result) => {
-            if (err) {
-                console.error('Database INSERT error:', err);
-                
-            }
+        const result = await db.query(sql, [userId, imagePath, disease, confidence]);
+        console.log('Prediction saved:', { userId, disease, confidence, imagePath });
 
-            res.json({
-                message: 'Prediction successful.',
-                result: {
-                    disease,
-                    confidence: (confidence * 100).toFixed(1) + '%',
-                    imagePath: imagePath.replace(/\\/g, '/') // Windows path fix
-                }
-            });
+        // Send response after saving
+        res.json({
+            message: 'Prediction successful.',
+            result: {
+                disease,
+                confidence: (confidence * 100).toFixed(1) + '%',
+                imagePath: imagePath.replace(/\\/g, '/') 
+            }
         });
 
     } catch (err) {
@@ -76,6 +70,13 @@ const predict = async (req, res) => {
 // GET /predict/history — user's own history
 const getHistory = async (req, res) => {
   try {
+    // Prevent caching
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
     const [rows] = await db.query(
       `SELECT id, image_path, predicted_disease, confidence, created_at
        FROM predictions
@@ -83,6 +84,8 @@ const getHistory = async (req, res) => {
        ORDER BY created_at DESC`,
       [req.user.id]
     );
+    
+    console.log('History query result:', rows);
     res.json({ history: rows });
   } catch (err) {
     console.error('History error:', err);
